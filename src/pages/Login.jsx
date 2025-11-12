@@ -59,6 +59,19 @@ export default function Login() {
     validate({ contact: value })
   }
 
+  const handleContactKeyDown = (e) => {
+    // Block non-digit keys except control/navigation keys
+    const allowed = [
+      'Backspace', 'Delete', 'Tab', 'ArrowLeft', 'ArrowRight', 'Home', 'End'
+    ]
+    if (allowed.includes(e.key)) return
+    // Allow Ctrl/Cmd + key combos (copy, paste, etc.)
+    if (e.ctrlKey || e.metaKey) return
+    if (!/^[0-9]$/.test(e.key)) {
+      e.preventDefault()
+    }
+  }
+
   const handleNameChange = (setter, key) => (e) => {
     // Trim leading spaces, keep only valid characters for feedback
     const raw = e.target.value
@@ -136,12 +149,15 @@ export default function Login() {
               type="tel"
               inputMode="numeric"
               pattern="\\d{10}"
+              maxLength={10}
               value={contact}
+              onKeyDown={handleContactKeyDown}
               onChange={handleContactChange}
               onBlur={() => handleBlur('contact')}
               required
               placeholder="10-digit number"
               className={`w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 ${errors.contact && touched.contact ? 'border-red-500 focus:ring-red-500' : 'focus:ring-blue-500'}`}
+              aria-invalid={!!(errors.contact && touched.contact)}
             />
             {errors.contact && touched.contact && (
               <p className="mt-1 text-xs text-red-600">{errors.contact}</p>
