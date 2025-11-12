@@ -49,6 +49,18 @@ function StepCard({ step, locked, onSubmit, state }) {
   const total = state?.total
   const results = state?.results || []
 
+  const handleSubmit = () => {
+    if (locked || status==='saving') return
+    // Require all questions answered before submission
+    const totalQs = step.quiz.questions.length
+    const allAnswered = answers.length === totalQs && answers.every(a => a !== undefined)
+    if (!allAnswered) {
+      alert('Please complete all questions')
+      return
+    }
+    onSubmit(step.index, answers)
+  }
+
   return (
     <div className={`bg-white rounded-xl p-5 shadow ${locked ? 'opacity-60' : ''}`}>
       <div className="flex items-center justify-between">
@@ -82,7 +94,7 @@ function StepCard({ step, locked, onSubmit, state }) {
             </div>
           </div>
         ))}
-        <button disabled={locked || status==='saving'} onClick={()=>onSubmit(step.index, answers)} className="mt-3 px-4 py-2 rounded bg-blue-600 text-white disabled:opacity-60">{locked? 'Locked' : status==='saving' ? 'Submitting...' : 'Submit'}</button>
+        <button disabled={locked || status==='saving'} onClick={handleSubmit} className="mt-3 px-4 py-2 rounded bg-blue-600 text-white disabled:opacity-60">{locked? 'Locked' : status==='saving' ? 'Submitting...' : 'Submit'}</button>
         {status && (status === 'passed' || status === 'failed') && (
           <div className="mt-2 text-sm text-gray-700">Your score for this assessment: <span className="font-semibold">{score}/{total}</span></div>
         )}

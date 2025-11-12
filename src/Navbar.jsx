@@ -24,6 +24,7 @@ export default function Navbar() {
               <>
                 <Link className={linkClass('/domains')} to="/domains">Domains</Link>
                 <Link className={linkClass('/dashboard')} to="/dashboard">Dashboard</Link>
+                <Link className={linkClass('/resume')} to="/resume">Resume Builder</Link>
                 <Link className={linkClass('/profile')} to="/profile">Profile</Link>
                 <button onClick={logout} className="ml-2 px-3 py-2 rounded-md text-sm font-medium bg-gray-800 text-white hover:bg-black">Logout</button>
               </>
