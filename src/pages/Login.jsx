@@ -17,7 +17,6 @@ export default function Login() {
   const navigate = useNavigate()
 
   const nameRegex = /^[A-Za-z][A-Za-z\s'-]{0,48}[A-Za-z]$/ // 2-50 chars, letters with optional space/hyphen/apostrophe
-  const contactRegex = /^\d{10}$/
 
   const validate = (fieldValues = {}) => {
     const v = { ...errors }
@@ -31,17 +30,13 @@ export default function Login() {
       else if (!nameRegex.test(lastName)) v.lastName = 'Use only letters (2-50), may include spaces, hyphens, apostrophes'
       else delete v.lastName
     }
-    if ('contact' in fieldValues) {
-      if (!contact) v.contact = 'Contact number is required'
-      else if (!contactRegex.test(contact)) v.contact = 'Enter a valid 10-digit number'
-      else delete v.contact
-    }
+    // Contact: no validation other than digit-only input handling
     setErrors(v)
     return v
   }
 
   const isFormValid = () => {
-    const v = validate({ firstName, lastName, contact })
+    const v = validate({ firstName, lastName })
     return Object.keys(v).length === 0
   }
 
@@ -49,14 +44,12 @@ export default function Login() {
     setTouched((t) => ({ ...t, [field]: true }))
     if (field === 'firstName') validate({ firstName })
     if (field === 'lastName') validate({ lastName })
-    if (field === 'contact') validate({ contact })
   }
 
   const handleContactChange = (e) => {
-    // Allow only digits and limit to 10
-    const value = e.target.value.replace(/\D/g, '').slice(0, 10)
+    // Only allow digits, no other validation
+    const value = e.target.value.replace(/\D/g, '')
     setContact(value)
-    validate({ contact: value })
   }
 
   const handleContactKeyDown = (e) => {
@@ -65,7 +58,6 @@ export default function Login() {
       'Backspace', 'Delete', 'Tab', 'ArrowLeft', 'ArrowRight', 'Home', 'End'
     ]
     if (allowed.includes(e.key)) return
-    // Allow Ctrl/Cmd + key combos (copy, paste, etc.)
     if (e.ctrlKey || e.metaKey) return
     if (!/^[0-9]$/.test(e.key)) {
       e.preventDefault()
@@ -73,7 +65,6 @@ export default function Login() {
   }
 
   const handleNameChange = (setter, key) => (e) => {
-    // Trim leading spaces, keep only valid characters for feedback
     const raw = e.target.value
     const cleaned = raw.replace(/[^A-Za-z\s'-]/g, '')
     setter(cleaned)
@@ -85,13 +76,12 @@ export default function Login() {
     setError('')
 
     if (!isFormValid()) {
-      setTouched({ firstName: true, lastName: true, contact: true })
+      setTouched({ firstName: true, lastName: true })
       return
     }
 
     setLoading(true)
     try {
-      // Backend login requires only email/password. Extra fields validated client-side only.
       const res = await api('/auth/login', { method: 'POST', body: { email, password }, auth: false })
       setToken(res.token)
       navigate('/domains')
@@ -148,20 +138,13 @@ export default function Login() {
             <input
               type="tel"
               inputMode="numeric"
-              pattern="\\d{10}"
-              maxLength={10}
               value={contact}
               onKeyDown={handleContactKeyDown}
               onChange={handleContactChange}
-              onBlur={() => handleBlur('contact')}
-              required
-              placeholder="10-digit number"
-              className={`w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 ${errors.contact && touched.contact ? 'border-red-500 focus:ring-red-500' : 'focus:ring-blue-500'}`}
-              aria-invalid={!!(errors.contact && touched.contact)}
+              placeholder="Digits only"
+              className="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
-            {errors.contact && touched.contact && (
-              <p className="mt-1 text-xs text-red-600">{errors.contact}</p>
-            )}
+            <p className="mt-1 text-xs text-gray-500">Digits only, no other characters.</p>
           </div>
 
           <div>
